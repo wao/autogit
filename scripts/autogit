@@ -3,10 +3,10 @@
 
 import git
 
-repo = git.Repo.init(".")
+repo = git.Repo(".")
 
-if repo.git.status():
-    print("true")
-else:
-    print("false")
+print(repo.is_dirty())
 
+print(repo.heads.main)
+
+print(repo.git.status("--short"))
