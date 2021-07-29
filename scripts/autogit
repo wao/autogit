@@ -27,9 +27,14 @@ def do_commit(repo):
     repo.git.add(repo.working_dir)
     repo.index.commit("Auto commit at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
-def do_pull(repo):
+def do_sync(repo):
     if "origin" in repo.remotes:
         repo.remotes.origin.pull()
+
+        check_repo_conflicts(repo)
+
+        repo.remotes.origin.push()
+    
 
 def check_repo_conflicts(repo):
     if repo_has_conflicts(repo):
@@ -57,7 +62,7 @@ if repo_is_dirty(repo):
     do_commit(repo)
 
 
-do_pull(repo)
+do_sync(repo)
 
 check_repo_conflicts(repo)
 
