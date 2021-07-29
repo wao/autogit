@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+#vim:mode:ft=python
+
+import git
+
+repo = git.Repo.init(".")
+
+if repo.git.status():
+    print("true")
+else:
+    print("false")
+
