@@ -2,11 +2,64 @@
 #vim:mode:ft=python
 
 import git
+import sys
+import time
+import os
+import requests
 
-repo = git.Repo(".")
+def internet_disconnected():
+    try:
+        requests.get("http://www.google.com")
+        return False
+    except:
+        return True
 
-print(repo.is_dirty())
+def report_conflict(repo):
+    print("repo has conflict")
 
-print(repo.heads.main)
+def repo_has_conflicts(repo):
+    return os.path.exists(repo.common_dir+"/MERGE_HEAD")
 
-print(repo.git.status("--short"))
+def repo_is_dirty(repo):
+    return repo.is_dirty(untracked_files=True)
+
+def do_commit(repo):
+    repo.git.add(repo.working_dir)
+    repo.index.commit("Auto commit at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+
+def do_pull(repo):
+    if "origin" in repo.remotes:
+        repo.remotes.origin.pull()
+
+def check_repo_conflicts(repo):
+    if repo_has_conflicts(repo):
+        print( "Repo %s has conflict" %  repo.working_dir  )
+        report_conflict(repo)
+        exit(-1)
+
+if len(sys.argv) > 1:
+    repo_path = sys.argv[1]
+else:
+    repo_path = "."
+
+print(repo_path)
+
+repo = git.Repo(repo_path)
+
+check_repo_conflicts(repo)
+
+if internet_disconnected():
+    print( "Intenet is not avaliable" )
+    exit(0)
+
+
+if repo_is_dirty(repo):
+    do_commit(repo)
+
+
+do_pull(repo)
+
+check_repo_conflicts(repo)
+
+exit(0)
+
