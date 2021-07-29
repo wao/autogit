@@ -1,70 +1,26 @@
 #!/usr/bin/env python3
 #vim:mode:ft=python
 
-import git
+import autogit
 import sys
 import time
 import os
 import requests
 
-def internet_disconnected():
-    try:
-        requests.get("http://www.google.com")
-        return False
-    except:
-        return True
-
-def report_conflict(repo):
-    print("repo has conflict")
-
-def repo_has_conflicts(repo):
-    return os.path.exists(repo.common_dir+"/MERGE_HEAD")
-
-def repo_is_dirty(repo):
-    return repo.is_dirty(untracked_files=True)
-
-def do_commit(repo):
-    repo.git.add(repo.working_dir)
-    repo.index.commit("Auto commit at " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-
-def do_sync(repo):
-    if "origin" in repo.remotes:
-        repo.remotes.origin.pull()
-
-        check_repo_conflicts(repo)
-
-        repo.remotes.origin.push()
-    
-
-def check_repo_conflicts(repo):
-    if repo_has_conflicts(repo):
-        print( "Repo %s has conflict" %  repo.working_dir  )
-        report_conflict(repo)
-        exit(-1)
+repo_paths = []
 
 if len(sys.argv) > 1:
-    repo_path = sys.argv[1]
+    if os.path.isfile(sys.argv[1]):
+        with open(sys.argv[1]) as r:
+            repo_paths = [ p.strip("\n").strip("\r") for p in r.readlines() ]
+    else:
+        repo_paths.append(sys.argv[1])
 else:
-    repo_path = "."
+    repo_paths.append(".")
 
-print(repo_path)
+print(repo_paths)
 
-repo = git.Repo(repo_path)
-
-check_repo_conflicts(repo)
-
-if internet_disconnected():
-    print( "Intenet is not avaliable" )
-    exit(0)
-
-
-if repo_is_dirty(repo):
-    do_commit(repo)
-
-
-do_sync(repo)
-
-check_repo_conflicts(repo)
-
-exit(0)
-
+while True:
+    for repo_path in repo_paths:
+        autogit.sync_repo(repo_path)
+    time.sleep(10)
